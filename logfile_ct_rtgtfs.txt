@@ -8,3 +8,5 @@ WARN  [2023-05-15 17:00:59] There were 0 failed RTGTFS queries.... ~0% of total
 INFO  [2023-05-15 17:01:01] Subquery start
 INFO  [2023-05-15 17:06:32] 269 records were obtained for this query.
 WARN  [2023-05-15 17:06:32] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-15 17:13:53] Query start time: 20230515_171353
+INFO  [2023-05-15 17:13:53] Subquery start
