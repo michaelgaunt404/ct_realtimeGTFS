@@ -1,11 +1,11 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #
-# This is script loads packages used for dev of target objects.
+# This is script queries RTGTFS feeds.
 #
-# By: mike gaunt, michael.gaunt@wsp.com
+# By: mike gaunt, mike.gaunt.404@gmail.com
 #
-# README: [[insert brief readme here]]
-#-------- [[insert brief readme here]]
+# README: You need to change API urls
+#-------- You will need to crete a blank logfile before hand
 #
 # *please use 80 character margins
 #
@@ -24,6 +24,7 @@ library(dplyr)
 library(jsonlite)
 library(rtgtfsr)
 library(log4r)
+library(gauntlet)
 
 #import data====================================================================
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -42,8 +43,8 @@ query_rtgtfs_json(
     ,url_vp = 'http://s3.amazonaws.com/commtrans-realtime-prod/vehiclepositions_pb.json'
     ,url_alerts = 'http://s3.amazonaws.com/commtrans-realtime-prod/alerts_pb.json'
   )
-  ,ttl_query_duration = .25  # Hours
-  ,cache_interval = 5  # Minutes
+  ,ttl_query_duration = 1  # Hours
+  ,cache_interval = 15  # Minutes
   ,query_interval = 10  # Seconds
   ,routes = c("201", "202")
   ,log_file = "logfile_ct_rtgtfs.txt"
