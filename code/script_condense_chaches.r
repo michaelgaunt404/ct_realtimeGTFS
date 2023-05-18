@@ -16,6 +16,8 @@
 #content in this section should be removed if in production - ok for dev
 library(tidyverse)
 library(gauntlet)
+library(here)
+library(readr)
 
 #path set-up====================================================================
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -31,7 +33,7 @@ library(gauntlet)
 #area to upload data with and to perform initial munging
 #please add test data here so that others may use/unit test these scripts
 
-cache_daily_files()
+cache_daily_files(folder_save_to = "data/daily_cache_files")
 
 #main header====================================================================
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

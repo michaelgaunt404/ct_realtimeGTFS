@@ -1,13 +1,12 @@
 
 
-install.packages('skimr')
-install.packages('sf')
 library(tidyverse)
 library(magrittr)
 library(here)
 library(sf)
 library(mapview)
-install.packages("crosstalk")
+library(gauntlet)
+library(rtgtfsr)
 
 
 list_vp_rds = gauntlet::read_rds_allFiles(
@@ -16,10 +15,6 @@ list_vp_rds = gauntlet::read_rds_allFiles(
 data_vp = process_vp_list_rds(list_vp_rds)
 
 data_vp_sf = convert_vp_data_to_sf(data_vp, 32610)
-
-data_vp_sf %>%
-  filter(current_status == "IN_TRANSIT_TO") %>%
-mapview::mapview(zcol = "speed_avg")
 
 data_vp %>%
   filter(!is.na(datetime_diff)) %>%
@@ -53,7 +48,8 @@ data_vp %>%
   ggplot() +
   geom_tile(aes(time, y = 1,  fill = n)) +
   facet_grid(row = vars(date)) +
-  scale_x_time(breaks = scales::breaks_width("1 hour"))
+  scale_x_time(breaks = scales::breaks_width("1 hour")) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
 
 
 
@@ -76,51 +72,7 @@ data_vp %>%
 
 
 
-tmp %>%  names()
 
-item = temp_data %>%
-  # filter(str_detect(id, "_15109")) %>%
-  # filter(vehicle.timestamp == 1683572554) %>%
-  filter(vehicle.trip.route_id == 201 |
-           vehicle.trip.route_id == 202) %>%
-  filter(vehicle.current_status != "IN_TRANSIT_TO") %>%
-  arrange(vehicle.trip.route_id, vehicle.vehicle.id, id) %>%
-  group_by(vehicle.trip.route_id, vehicle.vehicle.id, vehicle.trip.trip_id) %>%
-  mutate(date_time = #gsub('_.*', "\\1", 1683572554)
-           vehicle.timestamp %>%
-           as.numeric() %>%
-           lubridate::as_datetime() %>%
-           lubridate::with_tz("US/Pacific")) %>%
-  mutate(datetime_diff = as.numeric(date_time-lag(date_time))) %>%
-  ungroup() %>%
-  data.frame() %>%
-  filter(datetime_diff != 0) %>%
-  sf::st_as_sf(coords = c('vehicle.position.longitude', 'vehicle.position.latitude'), crs = 4326) %>%
-  sf::st_transform(32610) %>%
-  gauntlet::st_extract_coords() %>%
-  group_by(vehicle.trip.route_id, vehicle.vehicle.id, vehicle.trip.trip_id) %>%
-  mutate(lon_diff = lon-lag(lon)
-         ,lat_diff = lat-lag(lat)
-         ,ttl_diff = sqrt(lon_diff**2 + lat_diff**2)
-         ,speed_avg = (ttl_diff/datetime_diff)*2.236936) %>%
-  ungroup() %>%
-  sf::st_transform(4326) %>%
-  st_jitter() %>%
-  mapview::mapview(#zcol = "vehicle.timestamp"
-    zcol = "speed_avg")
-
-
-
-
-
-
-
-
-data_vp %>%
-  names()
-
-data_vp %>%
-  map(nrow)
 
 
 
