@@ -411,3 +411,144 @@ WARN  [2023-05-18 09:48:46] There were 0 failed RTGTFS queries.... ~0% of total
 INFO  [2023-05-18 09:48:47] Subquery start
 INFO  [2023-05-18 10:06:47] 805 records were obtained for this query.
 WARN  [2023-05-18 10:06:47] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 10:53:29] Query start time: 20230518_105329
+INFO  [2023-05-18 10:53:29] Subquery start
+INFO  [2023-05-18 11:12:13] 762 records were obtained for this query.
+WARN  [2023-05-18 11:12:13] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 11:12:14] Subquery start
+INFO  [2023-05-18 11:30:28] 806 records were obtained for this query.
+WARN  [2023-05-18 11:30:28] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 11:30:29] Subquery start
+INFO  [2023-05-18 11:48:40] 750 records were obtained for this query.
+WARN  [2023-05-18 11:48:40] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 11:48:41] Subquery start
+INFO  [2023-05-18 12:07:55] 736 records were obtained for this query.
+WARN  [2023-05-18 12:07:55] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 12:53:28] Query start time: 20230518_125328
+INFO  [2023-05-18 12:53:28] Subquery start
+INFO  [2023-05-18 13:12:30] 731 records were obtained for this query.
+WARN  [2023-05-18 13:12:30] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 13:12:31] Subquery start
+INFO  [2023-05-18 13:31:56] 674 records were obtained for this query.
+WARN  [2023-05-18 13:31:56] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 13:31:57] Subquery start
+INFO  [2023-05-18 13:52:57] 795 records were obtained for this query.
+WARN  [2023-05-18 13:52:57] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 13:52:57] Subquery start
+INFO  [2023-05-18 14:11:10] 874 records were obtained for this query.
+WARN  [2023-05-18 14:11:10] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 14:53:29] Query start time: 20230518_145329
+INFO  [2023-05-18 14:53:29] Subquery start
+INFO  [2023-05-18 15:12:19] 893 records were obtained for this query.
+WARN  [2023-05-18 15:12:19] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 15:12:19] Subquery start
+INFO  [2023-05-18 15:30:35] 892 records were obtained for this query.
+WARN  [2023-05-18 15:30:35] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 15:30:38] Subquery start
+INFO  [2023-05-18 15:48:11] 894 records were obtained for this query.
+WARN  [2023-05-18 15:48:11] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 15:48:12] Subquery start
+INFO  [2023-05-18 16:06:49] 895 records were obtained for this query.
+WARN  [2023-05-18 16:06:50] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 16:53:29] Query start time: 20230518_165329
+INFO  [2023-05-18 16:53:29] Subquery start
+INFO  [2023-05-18 17:11:13] 847 records were obtained for this query.
+WARN  [2023-05-18 17:11:13] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 17:11:14] Subquery start
+INFO  [2023-05-18 17:28:50] 862 records were obtained for this query.
+WARN  [2023-05-18 17:28:50] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 17:28:51] Subquery start
+INFO  [2023-05-18 17:47:12] 986 records were obtained for this query.
+WARN  [2023-05-18 17:47:12] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 17:47:14] Subquery start
+INFO  [2023-05-18 18:05:25] 910 records were obtained for this query.
+WARN  [2023-05-18 18:05:25] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 18:53:31] Query start time: 20230518_185331
+INFO  [2023-05-18 18:53:31] Subquery start
+INFO  [2023-05-18 19:10:34] 803 records were obtained for this query.
+WARN  [2023-05-18 19:10:34] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 19:10:35] Subquery start
+INFO  [2023-05-18 19:27:28] 801 records were obtained for this query.
+WARN  [2023-05-18 19:27:28] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 19:27:29] Subquery start
+INFO  [2023-05-18 19:44:11] 711 records were obtained for this query.
+WARN  [2023-05-18 19:44:11] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 19:44:12] Subquery start
+INFO  [2023-05-18 20:00:47] 717 records were obtained for this query.
+WARN  [2023-05-18 20:00:47] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 20:53:28] Query start time: 20230518_205328
+INFO  [2023-05-18 20:53:28] Subquery start
+INFO  [2023-05-18 21:10:18] 514 records were obtained for this query.
+WARN  [2023-05-18 21:10:18] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 21:10:18] Subquery start
+INFO  [2023-05-18 21:26:54] 539 records were obtained for this query.
+WARN  [2023-05-18 21:26:54] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 21:26:55] Subquery start
+INFO  [2023-05-18 21:43:22] 536 records were obtained for this query.
+WARN  [2023-05-18 21:43:22] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 21:43:22] Subquery start
+INFO  [2023-05-18 21:59:58] 515 records were obtained for this query.
+WARN  [2023-05-18 21:59:58] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 22:53:29] Query start time: 20230518_225328
+INFO  [2023-05-18 22:53:29] Subquery start
+INFO  [2023-05-18 23:09:41] 179 records were obtained for this query.
+WARN  [2023-05-18 23:09:41] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 23:09:41] Subquery start
+INFO  [2023-05-18 23:25:37] 92 records were obtained for this query.
+WARN  [2023-05-18 23:25:37] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-18 23:25:37] Subquery start
+INFO  [2023-05-18 23:41:23] Subquery start
+INFO  [2023-05-19 00:53:29] Query start time: 20230519_005329
+INFO  [2023-05-19 00:53:29] Subquery start
+INFO  [2023-05-19 01:09:11] Subquery start
+INFO  [2023-05-19 01:24:53] Subquery start
+INFO  [2023-05-19 01:35:02] Subquery start
+INFO  [2023-05-19 01:53:28] Query start time: 20230519_015328
+INFO  [2023-05-19 01:53:28] Subquery start
+INFO  [2023-05-19 01:53:38] Subquery start
+INFO  [2023-05-19 01:53:47] Subquery start
+INFO  [2023-05-19 01:53:56] Subquery start
+INFO  [2023-05-19 02:53:28] Query start time: 20230519_025328
+INFO  [2023-05-19 02:53:28] Subquery start
+INFO  [2023-05-19 02:53:38] Subquery start
+INFO  [2023-05-19 02:53:47] Subquery start
+INFO  [2023-05-19 02:53:56] Subquery start
+INFO  [2023-05-19 03:53:32] Query start time: 20230519_035332
+INFO  [2023-05-19 03:53:32] Subquery start
+INFO  [2023-05-19 03:53:40] Subquery start
+INFO  [2023-05-19 03:53:51] Subquery start
+INFO  [2023-05-19 03:54:00] Subquery start
+INFO  [2023-05-19 04:53:31] Query start time: 20230519_045331
+INFO  [2023-05-19 04:53:31] Subquery start
+INFO  [2023-05-19 05:13:35] 208 records were obtained for this query.
+WARN  [2023-05-19 05:13:35] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-19 05:13:35] Subquery start
+INFO  [2023-05-19 05:32:34] 337 records were obtained for this query.
+WARN  [2023-05-19 05:32:34] There were 11 failed RTGTFS queries.... ~12% of total
+INFO  [2023-05-19 05:32:35] Subquery start
+INFO  [2023-05-19 05:55:14] 609 records were obtained for this query.
+WARN  [2023-05-19 05:55:15] There were 4 failed RTGTFS queries.... ~4% of total
+INFO  [2023-05-19 05:55:15] Subquery start
+INFO  [2023-05-19 05:57:18] 65 records were obtained for this query.
+WARN  [2023-05-19 05:57:18] There were 81 failed RTGTFS queries.... ~90% of total
+INFO  [2023-05-19 06:30:04] Query start time: 20230519_063004
+INFO  [2023-05-19 06:30:04] Subquery start
+INFO  [2023-05-19 06:53:05] 739 records were obtained for this query.
+WARN  [2023-05-19 06:53:05] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-19 06:53:06] Subquery start
+INFO  [2023-05-19 07:15:46] 797 records were obtained for this query.
+WARN  [2023-05-19 07:15:46] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-19 07:15:46] Subquery start
+INFO  [2023-05-19 07:34:51] 803 records were obtained for this query.
+WARN  [2023-05-19 07:34:51] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-19 07:34:51] Subquery start
+INFO  [2023-05-19 07:55:54] 802 records were obtained for this query.
+WARN  [2023-05-19 07:55:54] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-19 08:30:04] Query start time: 20230519_083004
+INFO  [2023-05-19 08:30:04] Subquery start
+INFO  [2023-05-19 08:50:51] 804 records were obtained for this query.
+WARN  [2023-05-19 08:50:51] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-19 08:50:51] Subquery start
+INFO  [2023-05-19 09:10:30] 805 records were obtained for this query.
+WARN  [2023-05-19 09:10:30] There were 0 failed RTGTFS queries.... ~0% of total
+INFO  [2023-05-19 09:10:30] Subquery start

@@ -83,13 +83,15 @@ tmp_polt = tmp %>%
     ,hour(date_time)>=16&hour(date_time)<18~"PM Peak"
     ,hour(date_time)>=10&hour(date_time)<14~"Midday"
     ,T~"Untracked")) %>%
+  filter(!is.na(speed_avg_diff)) %>%
   # group_by(flag_peak_time, index) %>%
   # summarise(speed_avg = mean(speed_avg)) %>%
   ungroup() %>%
-  ggplot(aes(index, speed_avg, color = flag_peak_time)) +
-  geom_point(alpha = .5) +
+  ggplot(aes(index, speed_avg_diff, color = speed_avg_diff)) +
+  geom_point(alpha = .25) +
   # geom_line() +
-  facet_grid(rows = vars(flag_peak_time))
+  facet_grid(rows = vars(flag_peak_time)) +
+  scale_color_viridis_c()
 
 plotly::ggplotly(tmp_polt)
 

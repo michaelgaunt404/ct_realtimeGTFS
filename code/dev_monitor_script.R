@@ -10,11 +10,19 @@ library(rtgtfsr)
 
 
 list_vp_rds = gauntlet::read_rds_allFiles(
-  specifically = "data_vp")
+  data_location = "data"
+  ,specifically = "data_vp")
 
 data_vp = process_vp_list_rds(list_vp_rds)
 
-data_vp_sf = convert_vp_data_to_sf(data_vp, 32610)
+data_vp = data_vp %>%
+  arrange(query_batch, route_id, vehicle_id, trip_id) %>%
+  group_by(route_id, vehicle_id, trip_id) %>%
+  mutate(date_time = timestamp)
+
+data_vp_sf = convert_vp_data_to_sf(data_vp, 32610) %>%
+  group_by(route_id, vehicle_id, trip_id) %>%
+  mutate(speed_avg_diff = speed_avg-lag(speed_avg))
 
 data_vp %>%
   filter(!is.na(datetime_diff)) %>%
@@ -26,7 +34,6 @@ data_vp %>%
     ,col = count
   )
 
-
 data_vp %>%
   count(query_batch, route_id, vehicle_id) %>%
   group_by(query_batch, route_id) %>%
@@ -34,7 +41,7 @@ data_vp %>%
             ,total_records = sum(n)) %>%
   ungroup() %>%
   mutate(time = hms::as_hms(floor_date(query_batch, "minute"))
-        ,date = date(query_batch)) %>%
+         ,date = date(query_batch)) %>%
   ggplot(aes(time, total_records, color = as.factor(route_id))) +
   geom_line() +
   geom_point() +
