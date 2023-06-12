@@ -43,9 +43,9 @@ query_rtgtfs_json(
     ,url_vp = 'http://s3.amazonaws.com/commtrans-realtime-prod/vehiclepositions_pb.json'
     ,url_alerts = 'http://s3.amazonaws.com/commtrans-realtime-prod/alerts_pb.json'
   )
-  ,ttl_query_duration = 1  # Hours
+  ,ttl_query_duration = 16  # Hours
   ,cache_interval = 15  # Minutes
-  ,query_interval = 10  # Seconds
+  ,query_interval = 25  # Seconds
   ,routes = c("201", "202")
   ,log_file = "logfile_ct_rtgtfs.txt"
 )

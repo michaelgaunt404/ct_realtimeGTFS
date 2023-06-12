@@ -33,7 +33,7 @@ library(readr)
 #area to upload data with and to perform initial munging
 #please add test data here so that others may use/unit test these scripts
 
-cache_daily_files(folder_save_to = "data/daily_cache_files")
+cache_daily_files_1(folder_save_to = "data/daily_cache_files")
 
 #main header====================================================================
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -45,7 +45,6 @@ cache_daily_files(folder_save_to = "data/daily_cache_files")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #script end=====================================================================
-
 
 
 
