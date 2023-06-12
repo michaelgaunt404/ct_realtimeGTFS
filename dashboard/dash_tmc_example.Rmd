@@ -1,0 +1,261 @@
+---
+title: "Daily Reports"
+
+output:
+  flexdashboard::flex_dashboard
+    # theme: 
+    #   version: 4
+    #   bootswatch: flatly
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, out.width = "100%")
+# knitr::opts_chunk$set(
+#   cache = FALSE, cache.lazy = FALSE, autodep = TRUE, warning = FALSE, 
+#   message = FALSE, echo = TRUE, dpi = 180,
+#   fig.width = 5, fig.height = 3, echo = FALSE
+#   )
+```
+
+<!--#general comments===========================================================
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# This is [[insert description here - what it does/solve]]
+#
+# By: mike gaunt, michael.gaunt@wsp.com
+#
+# README: [[insert brief readme here]]
+#-------- [[insert brief readme here]]
+#
+# *please use 80 character margins
+# *please go to https://pkgs.rstudio.com/flexdashboard/articles/layouts.html
+# to explore the different layouts available for the flexdashboard framework
+#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+
+<!--#library set-up=============================================================
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#content in this section should be removed if in production - ok for dev -->
+```{r echo=FALSE, message=F}
+library(tidyverse)
+library(gauntlet)
+library(here)
+library(magrittr)
+library(stringr)
+library(readr)
+library(purrr)
+library(dplyr)
+library(jsonlite)
+library(rtgtfsr)
+library(log4r)
+library(sf)
+library(leaflet)
+library(leafpop)
+```
+
+<!--#source helpers/utilities===================================================
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#content in this section should be removed if in production - ok for dev -->
+```{r}
+source(here::here("code", "dev_explore_turning_counts.r"))
+```
+
+<!--#source data================================================================
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#content in this section should be removed if in production - ok for dev 
+#area to upload data with and to perform initial munging
+#please add test data here so that others may use/unit test these scripts -->
+```{js}
+function filter_default(){
+  document.getElementById("id_acct_type").getElementsByClassName("selectized")[0].selectize.setValue("All",false) 
+  document.getElementById("id_metric_acct").getElementsByClassName("selectized")[0].selectize.setValue("Acct Count",false) 
+  document.getElementById("id_acct_status").getElementsByClassName("selectized")[0].selectize.setValue(["Active", "Pending Close"],false)
+  document.getElementById("id_acct_status_wd").getElementsByClassName("selectized")[0].selectize.setValue(["Active", "Pending Close"],false) 
+}
+    
+$(document).ready(filter_default);
+```
+
+
+Accounts Creation 
+================================================================================ 
+
+Row {.tabset .tabset-fade}
+--------------------------------------------------------------------------------
+
+### By Account Type 
+```{r}
+int_map
+```
+
+### Month Agg.
+```{r}
+
+```
+
+Accounts Cycle Day 
+================================================================================ 
+
+Row {.tabset .tabset-fade}
+--------------------------------------------------------------------------------
+
+### Agg. by Cycle Day {#week-agg}
+```{r}
+
+```
+
+### Agg by Account Status {#daily-agg}
+```{r}
+
+```
+
+Pass Fulfillment
+================================================================================ 
+
+Row {.tabset .tabset-fade}
+--------------------------------------------------------------------------------
+
+### By Year/Month
+```{r}
+
+```
+
+Daily Posting Summary 
+================================================================================ 
+
+Row {.tabset .tabset-fade}
+--------------------------------------------------------------------------------
+
+### By Posting Date 
+```{r}
+
+```
+
+### By Trip Date 
+```{r}
+
+```
+
+CSR Report 
+================================================================================ 
+
+Row {.tabset .tabset-fade}
+--------------------------------------------------------------------------------
+
+### CSR
+```{r}
+
+```
+
+Disposition Summary
+================================================================================ 
+
+Row {.tabset .tabset-fade}
+--------------------------------------------------------------------------------
+
+### Disposition
+```{r}
+
+```
+
+<style>
+.container-fluid.crosstalk-bscols {
+margin-left: 30px;
+margin-right: 30px;
+white-space: normal
+}
+
+body>.container-fluid.crosstalk-bscols {
+margin-left: auto;
+margin-right: auto
+}
+
+.crosstalk-input-checkboxgroup .crosstalk-options-group .crosstalk-options-column {
+display: inline-block;
+padding-right: 12px;
+vertical-align: top
+}
+
+@media only screen and (max-width: 480px) {
+.crosstalk-input-checkboxgroup .crosstalk-options-group .crosstalk-options-column {
+display:block;
+padding-right: inherit
+}
+}
+
+.crosstalk-input {
+margin-bottom: 15px
+}
+
+.crosstalk-input .control-label {
+margin-bottom: 0;
+vertical-align: middle
+}
+
+.crosstalk-input input[type="checkbox"] {
+margin: 4px 0 0;
+margin-top: 1px;
+line-height: normal
+}
+
+.crosstalk-input .checkbox {
+position: relative;
+display: block;
+margin-top: 10px;
+margin-bottom: 10px
+}
+
+.crosstalk-input .checkbox>label {
+padding-left: 20px;
+margin-bottom: 0;
+font-weight: 400;
+cursor: pointer
+}
+
+.crosstalk-input .checkbox input[type="checkbox"],.crosstalk-input .checkbox-inline input[type="checkbox"] {
+position: absolute;
+margin-top: 2px;
+margin-left: -20px
+}
+
+.crosstalk-input .checkbox+.checkbox {
+margin-top: -5px
+}
+
+.crosstalk-input .checkbox-inline {
+position: relative;
+display: inline-block;
+padding-left: 20px;
+margin-bottom: 0;
+font-weight: 400;
+vertical-align: middle;
+cursor: pointer
+}
+
+.crosstalk-input .checkbox-inline+.checkbox-inline {
+margin-top: 0;
+margin-left: 10px
+}
+
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
