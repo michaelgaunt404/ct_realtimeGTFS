@@ -1,0 +1,441 @@
+---
+title: "CT RTGTFS: Speed Analysis Tool"
+
+output:
+  flexdashboard::flex_dashboard
+    # theme: 
+    #   version: 4
+    #   bootswatch: flatly
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, out.width = "100%")
+# knitr::opts_chunk$set(
+#   cache = FALSE, cache.lazy = FALSE, autodep = TRUE, warning = FALSE, 
+#   message = FALSE, echo = TRUE, dpi = 180,
+#   fig.width = 5, fig.height = 3, echo = FALSE
+#   )
+```
+
+<!--#general comments===========================================================
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# This is [[insert description here - what it does/solve]]
+#
+# By: mike gaunt, michael.gaunt@wsp.com
+#
+# README: [[insert brief readme here]]
+#-------- [[insert brief readme here]]
+#
+# *please use 80 character margins
+# *please go to https://pkgs.rstudio.com/flexdashboard/articles/layouts.html
+# to explore the different layouts available for the flexdashboard framework
+#
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ -->
+
+<!--#library set-up=============================================================
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#content in this section should be removed if in production - ok for dev -->
+```{r}
+library(crosstalk)
+library(leaflet)
+```
+
+<!--#source helpers/utilities===================================================
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#content in this section should be removed if in production - ok for dev -->
+```{r}
+source(here::here("code", "dev_dashboard_data_setup.r"))
+
+mapviewOptions(homebutton = F)
+```
+
+<!--#source data================================================================
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#content in this section should be removed if in production - ok for dev 
+#area to upload data with and to perform initial munging
+#please add test data here so that others may use/unit test these scripts -->
+```{js}
+function filter_default(){
+  document.getElementById("fltr_direction_id").getElementsByClassName("selectized")[0].selectize.setValue(["north_bound", "south_bound"],false)
+  document.getElementById("fltr_flag_peak_time").getElementsByClassName("selectized")[0].selectize.setValue("PM Peak",false) 
+  document.getElementById("fltr_flag_week_part").getElementsByClassName("selectized")[0].selectize.setValue("week_core",false)
+}
+    
+$(document).ready(filter_default);
+```
+
+
+Corridor Speed Statistics  
+================================================================================ 
+
+ Column {.tabset .tabset-fade}
+--------------------------------------------------------------------------------
+
+### Route Speed Profiles
+```{r eval=TRUE}
+windows = c(1, 3, 5, 7)
+plot_data = data_speed_pro_stats %>%
+  pivot_longer(cols = c("speed_avg_mean", contains("_qt_"))
+               ,names_to = "speed_quantile") %>%
+  filter(speed_quantile %in% c('speed_avg_mean', 'speed_avg_qt_0.05'  
+                     ,'speed_avg_qt_0.5', 'speed_avg_qt_0.95')) %>%
+  filter(direction_id == "north_bound") %>% 
+  group_by(flag_peak_time, speed_quantile) %>%  
+  mutate(across(
+    value
+    ,purrr::map(windows
+                ,~purrr::partial(zoo::rollmean, k = .x, align = "center", na.pad = T))
+    ,.names = "MA {windows}")) %>% 
+  ungroup() %>% 
+  pivot_longer(cols = contains("MA")
+               ,names_to = "smoothing_window"
+               ,values_to = "value_sm") %>% 
+  select(index:direction_id, speed_quantile, smoothing_window, value_sm)
+
+plot_temp = plot_data %>% 
+  mutate(speed_quantile = str_remove(speed_quantile, "speed_avg_")
+         ,label = str_glue("Seg Speed: {gauntlet::dgt2(value_sm)} ({smoothing_window})\nStatistic: {speed_quantile}\n{direction_id}\nRoute Segement: {index}")
+  ) %>% 
+  filter(smoothing_window  %in% paste0('MA ', c(1, 7))) %>%
+  filter(flag_peak_time != "Midday") %>%
+  group_by(flag_peak_time) %>%
+  group_map(~{
+    plot_ly(.x, x=~index, y = ~value_sm, color = ~speed_quantile, legendgroup = ~speed_quantile
+            ,text = ~label, hoverinfo = 'text'
+            ,type = "scatter",  mode = 'lines', showlegend = (.y == "AM Peak")
+            ,customdata = ~smoothing_window
+            ,transforms = list(
+              list(type = 'filter',target = ~smoothing_window, operation = '=',value = 'MA 1')
+            )
+    ) %>% 
+      layout(yaxis = list(
+        # range = c(0, max(.x$value)*1.1)
+        titlefont = list(size = 11)
+        ,title = paste0(
+          c(rep("&nbsp;", 20),
+            paste("<b>", as.character(.y), "</b>"),
+            rep("&nbsp;", 20)),
+          collapse = "")
+        ,updatemenus = gauntlet::plty_make_menu_item(
+          name_list = paste0("MA ", c(1,  5, 7))
+          ,filter_pos = 0,direction = "right", x = 0, y = 1.2)
+      )
+      )
+  })
+
+tmp_nb = subplot(
+  list(plot_temp[[1]], plot_temp[[2]]), #, plot_temp[[3]]),
+  nrows = 2, margin = .05, shareX = T, shareY = T, titleY = T) %>%
+  # rangeslider() %>% 
+  layout(
+    showlegend = T
+    ,xaxis = list(title = "Route Segement Number")
+    # yaxis = list(title = "Queired Date"),
+    ,updatemenus = gauntlet::plty_make_menu_item(
+      name_list = paste0("MA ", c(1, 7))
+      ,filter_pos = 0,direction = "right", x = 0, y = 1.2)
+  )
+
+```
+
+```{r eval=TRUE}
+# windows = c(1, 3, 5, 7)
+plot_data = data_speed_pro_stats %>%
+  pivot_longer(cols = c("speed_avg_mean", contains("_qt_"))
+               ,names_to = "speed_quantile") %>%
+  filter(speed_quantile %in% c('speed_avg_mean', 'speed_avg_qt_0.05'  
+                     ,'speed_avg_qt_0.5', 'speed_avg_qt_0.95')) %>%
+  filter(direction_id != "north_bound") %>% 
+  group_by(flag_peak_time, speed_quantile) %>%  
+  mutate(across(
+    value
+    ,purrr::map(windows
+                ,~purrr::partial(zoo::rollmean, k = .x, align = "center", na.pad = T))
+    ,.names = "MA {windows}")) %>% 
+  ungroup() %>% 
+  pivot_longer(cols = contains("MA")
+               ,names_to = "smoothing_window"
+               ,values_to = "value_sm") %>% 
+  select(index:direction_id, speed_quantile, smoothing_window, value_sm)
+
+plot_temp = plot_data %>% 
+  mutate(speed_quantile = str_remove(speed_quantile, "speed_avg_")
+         ,label = str_glue("Seg Speed: {gauntlet::dgt2(value_sm)} ({smoothing_window})\nStatistic: {speed_quantile}\n{direction_id}\nRoute Segement: {index}")
+  ) %>% 
+  filter(smoothing_window  %in% paste0('MA ', c(1, 7))) %>%
+  filter(flag_peak_time != "Midday") %>%
+  group_by(flag_peak_time) %>%
+  group_map(~{
+    plot_ly(.x, x=~index, y = ~value_sm, color = ~speed_quantile, legendgroup = ~speed_quantile
+            ,text = ~label, hoverinfo = 'text'
+            ,type = "scatter",  mode = 'lines', showlegend = (.y == "AM Peak")
+            ,customdata = ~smoothing_window
+            ,transforms = list(
+              list(type = 'filter',target = ~smoothing_window, operation = '=',value = 'MA 1')
+            )
+    ) %>% 
+      layout(yaxis = list(
+        # range = c(0, max(.x$value)*1.1)
+        titlefont = list(size = 11)
+        ,title = paste0(
+          c(rep("&nbsp;", 20),
+            paste("<b>", as.character(.y), "</b>"),
+            rep("&nbsp;", 20)),
+          collapse = "")
+        ,updatemenus = gauntlet::plty_make_menu_item(
+          name_list = paste0("MA ", c(1,  5, 7))
+          ,filter_pos = 0,direction = "right", x = 0, y = 1.2)
+      )
+      )
+  })
+
+tmp_sb = subplot(
+  list(plot_temp[[1]], plot_temp[[2]]), #, plot_temp[[3]]),
+  nrows = 2, margin = .05, shareX = T, shareY = T, titleY = T) %>%
+  # rangeslider() %>% 
+  layout(
+    showlegend = T
+    ,xaxis = list(title = "Route Segement Number")
+    # yaxis = list(title = "Queired Date"),
+    ,updatemenus = gauntlet::plty_make_menu_item(
+      name_list = paste0("MA ", c(1, 7))
+      ,filter_pos = 0,direction = "right", x = 0, y = 1.2)
+  )
+
+```
+
+```{r eval=TRUE}
+crosstalk::bscols(
+  widths = c(12, 12)
+  ,tmp_nb
+  ,tmp_sb
+)
+```
+
+### Segment Summary Statistics
+```{r eval=TRUE}
+tmp_1 = data_speed_pro_stats %>%
+  pivot_longer(cols = c("speed_avg_var", "speed_avg_sd", "speed_avg_stderr", "speed_avg_pre", "rec_count")) %>%
+  group_by(flag_peak_time, name) %>%
+  mutate(value = zoo::rollmean(value, k = 5, align = "center", na.pad = T) %>%
+           dgt2()) %>%
+  ungroup() %>%
+  ggplot() +
+  geom_line(aes(index, value, color = flag_peak_time), alpha = .6) +
+  facet_grid(rows = vars(name), cols = vars(direction_id), scales = "free") +
+  labs(x = "Route Segement Number", y = "Metric Value", color = "Week Part") +
+  theme(legend.position = "bottom")
+
+plotly::ggplotly(tmp_1)
+```
+
+Column {data-width=400} 
+--------------------------------------------------------------------------------
+
+### Route Segements
+```{r}
+data_map = list_speed_profiles$route_samples %>%
+  filter(index >= min(index_selected$index) &
+           index <= max(index_selected$index)) %>% 
+  mutate(label = str_glue("Route Segment: {index}"))
+
+data_map_sh = SharedData$new(data_map)
+
+yolo = crosstalk::bscols(
+  widths = c(6, 12)
+  ,filter_slider("fltr_speed_avg", "Route Segement:", data_map_sh, ~index, step = 5, round = T)
+  ,leaflet(height = 700) %>% 
+    leaflet::addTiles(group = "OSM (default)") %>%
+    leaflet::addCircleMarkers(
+      data = data_map_sh, label = data_map$label %>% purrr::map(htmltools::HTML) 
+      ,color = "blue", opacity = .5, fillOpacity  = .2, weight = 1, radius = 10)
+)
+
+```
+
+```{r}
+leaflet(height = 700) %>% 
+    leaflet::addTiles(group = "OSM (default)") %>%
+    leaflet::addCircleMarkers(
+      data = data_map_sh, label = data_map$label %>% purrr::map(htmltools::HTML) 
+      ,color = "blue", opacity = .5, fillOpacity  = .2, weight = 1, radius = 10) %>% 
+  addMeasure(primaryLengthUnit = "meter", position = "bottomleft")
+```
+
+Raw Data 
+================================================================================ 
+
+Column 
+--------------------------------------------------------------------------------
+
+```{r}
+library(crosstalk)
+
+data_speed_pro_1 = data_speed_pro %>%  
+  st_as_sf(coords = c("lon", "lat"), crs = 32610) %>%  
+  st_transform(crs = 4326) %>% 
+  gauntlet::st_extract_coords() %>%  
+  st_drop_geometry() %>% 
+  filter(flag_peak_time != "Midday")
+
+data_speed_pro_new = data_speed_pro_1 %>%  
+  merge(data_speed_pro_stats
+        ,by = c("index", "flag_peak_time", "direction_id")) %>% 
+  mutate(
+    speed_avg = dgt0(speed_avg)
+    ,speed_avg_diff = dgt0(speed_avg_diff)
+    ,label = str_glue("{direction_id} - {flag_peak_time} - {flag_week_part}\nSeg. Speed (mph): {speed_avg}\nRoute Segment: {index}")
+    ,label_map = str_glue("{direction_id} - {flag_peak_time} - {flag_week_part}<br>Seg. Speed (mph): {speed_avg}<br>Route Segment: {index}"))
+
+pal_centroids_od = leaflet::colorNumeric(
+      palette = "magma"
+      ,data_speed_pro_new$speed_avg
+      ,reverse = T)
+
+data_speed_pro_sh = SharedData$new(data_speed_pro_new)
+
+bscols(
+  widths = c(2, 10)
+  ,list(
+    filter_slider("fltr_index", "Route Segment:", data_speed_pro_sh, ~index, step = 5)
+    ,filter_slider("fltr_speed_avg", "Point Speed:", data_speed_pro_sh, ~speed_avg, step = 5, round = T)
+    ,filter_slider("fltr_speed_avg", "Speed Difference:", data_speed_pro_sh, ~speed_avg_diff, step = 5, round = T)
+    ,filter_slider("fltr_speed_avg_mean", "Average Speed:", data_speed_pro_sh, ~speed_avg_mean, step = 5, round = T)
+    ,filter_slider("fltr_speed_avg_sd", "Segment SD:", data_speed_pro_sh, ~speed_avg_sd, step = 1, round = T)
+    ,filter_slider("fltr_speed_avg_stderr", "Segment SDErr:", data_speed_pro_sh, ~speed_avg_stderr, step = 1, round = T)
+    ,filter_slider("fltr_rec_count", "Segment Rec Counts:", data_speed_pro_sh, ~rec_count, step = 1, round = T)
+  )
+  ,bscols(
+    widths = c(3, 3, 3, 7, 5)
+    ,filter_select("fltr_direction_id", "Direction:", data_speed_pro_sh, ~direction_id, multiple = T)
+    ,filter_select("fltr_flag_peak_time", "Day Peak:", data_speed_pro_sh, ~flag_peak_time, multiple = T)
+    ,filter_select("fltr_flag_week_part", "Week Part:", data_speed_pro_sh, ~flag_week_part, multiple = T)
+    ,plot_ly(data_speed_pro_sh, x=~index, y = ~speed_avg, alpha = .4
+             ,text = ~label, hoverinfo = 'text', height = 600)
+    ,leaflet(data_speed_pro_sh, height = 600) %>% 
+      leaflet::addTiles(group = "OSM (default)") %>%
+      leaflet_default_tiles() %>%
+      addCircleMarkers(
+        lng = ~lon, lat = ~lat, radius = ~gauntlet::rescale_to(speed_avg, 20)
+        ,fillColor = ~pal_centroids_od(data_speed_pro_new$speed_avg), color = "black"
+        ,label = data_speed_pro_new$label_map %>% purrr::map(htmltools::HTML)
+        ,opacity = .7, fillOpacity  = .6, weight = 1, group = "speeds") %>% 
+      leafem::addMouseCoordinates() %>%
+      leaflet::addLayersControl(
+        baseGroups = gauntlet::leaflet_default_tiles_index()
+        # ,overlayGroups = c("speeds")
+        ,options = layersControlOptions(collapsed = F, sortLayers = F)) %>% 
+      leaflet::addLegend(
+        position = "bottomright"
+        ,title = "Vehicle Point<br>Speeds (MPH)"
+        ,group = "speeds"
+        ,pal = pal_centroids_od
+        ,opacity = 0.7
+        ,values = data_speed_pro_new$speed_avg)
+  )
+)
+
+```
+
+<style>
+.container-fluid.crosstalk-bscols {
+margin-left: 30px;
+margin-right: 30px;
+white-space: normal
+}
+
+body>.container-fluid.crosstalk-bscols {
+margin-left: auto;
+margin-right: auto
+}
+
+.crosstalk-input-checkboxgroup .crosstalk-options-group .crosstalk-options-column {
+display: inline-block;
+padding-right: 12px;
+vertical-align: top
+}
+
+@media only screen and (max-width: 480px) {
+.crosstalk-input-checkboxgroup .crosstalk-options-group .crosstalk-options-column {
+display:block;
+padding-right: inherit
+}
+}
+
+.crosstalk-input {
+margin-bottom: 15px
+}
+
+.crosstalk-input .control-label {
+margin-bottom: 0;
+vertical-align: middle
+}
+
+.crosstalk-input input[type="checkbox"] {
+margin: 4px 0 0;
+margin-top: 1px;
+line-height: normal
+}
+
+.crosstalk-input .checkbox {
+position: relative;
+display: block;
+margin-top: 10px;
+margin-bottom: 10px
+}
+
+.crosstalk-input .checkbox>label {
+padding-left: 20px;
+margin-bottom: 0;
+font-weight: 400;
+cursor: pointer
+}
+
+.crosstalk-input .checkbox input[type="checkbox"],.crosstalk-input .checkbox-inline input[type="checkbox"] {
+position: absolute;
+margin-top: 2px;
+margin-left: -20px
+}
+
+.crosstalk-input .checkbox+.checkbox {
+margin-top: -5px
+}
+
+.crosstalk-input .checkbox-inline {
+position: relative;
+display: inline-block;
+padding-left: 20px;
+margin-bottom: 0;
+font-weight: 400;
+vertical-align: middle;
+cursor: pointer
+}
+
+.crosstalk-input .checkbox-inline+.checkbox-inline {
+margin-top: 0;
+margin-left: 10px
+}
+
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

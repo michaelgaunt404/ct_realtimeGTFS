@@ -77,14 +77,6 @@ data_vp %>% plot_query_batch_data(days = 7)
 
 
 
-tmp_1 = Sys.time()
-tigris::block_groups(48, county = 177)
-as.numeric((Sys.time()-tmp_1 ))
-
-
-
-
-
 
 
 
