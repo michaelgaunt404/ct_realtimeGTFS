@@ -64,8 +64,7 @@ files %>%
 #realtime_gtfs_data=============================================================
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-
-#this reads in all your data, i beleive the daily_chaches are saved as RDS to save space
+#this reads in all your data, i believe the daily_chaches are saved as RDS to save space
 #this should be its own target - list of RDS objects before processing
 list_vp_rds = gauntlet::read_rds_allFiles(
   data_location = "data/daily_cache_dl_20230828"
@@ -101,6 +100,9 @@ list_speed_profiles = make_speed_profiles(
   ,samp_dist = 50
   ,over_ride = c("202:59:00")
 )
+
+# saveRDS(list_speed_profiles, here::here("data/list_speed_profiles.rds"))
+# list_speed_profiles = read_rds(here::here("data/list_speed_profiles.rds"))
 
 #this has opportunity to be selected, would probably want to make it robust
 #-------select different start, stop points for different shape_ids
@@ -147,18 +149,22 @@ data_speed_pro_stats = speed_profile_index_stats(
 #bespoke locations speed and travel time========================================
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+##select segment points=========================================================
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 index_selected_4 = mapedit::selectFeatures(list_speed_profiles$route_samples) %>%
   # st_drop_geometry() %>%
   select(shape_id, index) %>%
   unique() %>%
   arrange(index)
 
+#select ends based on above
 index_selected_4_ends = mapedit::selectFeatures(index_selected_4) %>%
   select(shape_id, index) %>%
   mutate(flag_ends = "end") %>%
   unique() %>%
   arrange(index)
 
+#combine and process
 combined = index_selected_4 %>%
   merge(index_selected_4_ends %>% st_drop_geometry(), all = T) %>%
   mutate(flag_ends = replace_na(flag_ends, "middle")
@@ -166,25 +172,37 @@ combined = index_selected_4 %>%
            replace_na("end")
          ,index_lag = lag(index)%>%
            replace_na(max(index_selected_4_ends$index))) %>%
-  mutate(name = c("Hewitt", "14th", "100th")) %>%
-  # mutate(name = c("Hewitt", "23rd", "18th", "14th", "ramp"
-  #                 ,"4th", "grove", "88th", "100th")) %>%
+  # mutate(name = c("Hewitt", "14th", "100th")) %>%
+  mutate(name = c("Hewitt", "23rd", "18th", "14th", "ramp"
+                  ,"4th", "grove", "88th", "100th")) %>%
   mutate(name_lag = lag(name)%>%
            replace_na("100th"))
 
+#read in Mike Gaunt's selected if you want
 # saveRDS(combined, here::here("data/combined.rds"))
 combined = read_rds(here::here("data/combined.rds"))
 
+##process_segement_data=========================================================
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-library(furrr)
+#this section snaps individual buses to selected segment points
+#performed in 2x steps
+#first step ---- iterates through each segment and performs point snap/identification
+#---------- ---- takes a long time, dont have to perfrom if you're okay with MG's inputs
+#second step ---- applies a buffer to segements, can make as big or small as you want
 
-future::multisession(workers = 6)
 
-tictoc::tic()
+#first_step=====================================================================
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# library(furrr)
+#
+# future::multisession(workers = 6)
+#
+# tictoc::tic()
+#
+# crs_to = 32610
 
-crs_to = 32610
-
-# temp_output = combined %>%
+# temp_output_halfMeth = combined %>%
 #   select(index, index_lag, name, name_lag, flag_ends, flag_ends_lag) %>%
 #   st_drop_geometry() %>%
 #   split(., rownames(.)) %>%
@@ -220,91 +238,18 @@ crs_to = 32610
 #              ,segement_name = paste0(.x[c(3, 4)], collapse = "_")
 #              ,segement_type = paste0(.x[c(5, 6)], collapse = "_"))
 #
-#     index_segement_inflated = index_segement %>% quick_buffer(rad = 500)
-#
-#     min_distance = as.numeric(
-#       st_distance(index_segement_inflated[2, ]
-#                   ,index_segement_inflated[1, ])[[1]])
-#
-#     temp_processed %>%
-#       st_filter(index_segement_inflated)  %>%
-#       st_drop_geometry() %>%
-#       select(trip_id, direction_id, route_id, date_time, vehicle_id, segement
-#              ,segement_name, segement_type, time_diff, ttl_diff, speed_avg) %>%
-#       group_by(trip_id, direction_id, route_id
-#                ,vehicle_id, segement, segement_name, segement_type) %>%
-#       filter(n() == 2) %>%
-#       ungroup() %>%
-#       filter(!is.na(ttl_diff)) %>%
-#       filter(ttl_diff > min_distance)
 #   }, .progress = T)
+#
+# tictoc::toc()
 
-
-
-
-
-temp_output_halfMeth = combined %>%
-  select(index, index_lag, name, name_lag, flag_ends, flag_ends_lag) %>%
-  st_drop_geometry() %>%
-  split(., rownames(.)) %>%
-  future_map(~{
-    message(str_glue("Processing {paste0(.x[c(1, 2)], collapse = '_')}...."))
-    index_segement = combined %>%
-      filter(index %in% .x)
-
-    temp_processed = data_vp_sf %>%
-      filter(current_status == "IN_TRANSIT_TO") %>%
-      group_by(
-        trip_id_1 = trip_id
-        ,vehicle_id_1 = vehicle_id
-        ,direction_id_1 = direction_id) %>%
-      group_map(~{
-        index_close = st_nearest_feature(index_segement, .x, pairwise = T)
-
-        .x[index_close, ] %>%
-          arrange(date_time) %>%
-          sf::st_transform(crs = crs_to) %>%
-          gauntlet::st_extract_coords() %>%
-          mutate(time_diff = as.numeric(date_time - lag(date_time))*60) %>%
-          mutate(
-            lon_diff = lon - lag(lon),
-            lat_diff = lat - lag(lat),
-            ttl_diff = sqrt(lon_diff^2 + lat_diff^2),
-            speed_avg = (ttl_diff / time_diff) * 2.236936
-          ) %>%
-          st_transform(4326)
-      }) %>%
-      reduce(bind_rows) %>%
-      mutate(segement = paste0(.x[c(1, 2)], collapse = "_")
-             ,segement_name = paste0(.x[c(3, 4)], collapse = "_")
-             ,segement_type = paste0(.x[c(5, 6)], collapse = "_"))
-
-    # index_segement_inflated = index_segement %>% quick_buffer(rad = 500)
-    #
-    # min_distance = as.numeric(
-    #   st_distance(index_segement_inflated[2, ]
-    #               ,index_segement_inflated[1, ])[[1]])
-    #
-    # temp_processed %>%
-    #   st_filter(index_segement_inflated)  %>%
-    #   st_drop_geometry() %>%
-    #   select(trip_id, direction_id, route_id, date_time, vehicle_id, segement
-    #          ,segement_name, segement_type, time_diff, ttl_diff, speed_avg) %>%
-    #   group_by(trip_id, direction_id, route_id
-    #            ,vehicle_id, segement, segement_name, segement_type) %>%
-    #   filter(n() == 2) %>%
-    #   ungroup() %>%
-    #   filter(!is.na(ttl_diff)) %>%
-    #   filter(ttl_diff > min_distance)
-  }, .progress = T)
-
-tictoc::toc()
-
-
+#second_step=====================================================================
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # saveRDS(temp_output_halfMeth, here::here("data/temp_output_halfMeth.rds"))
 temp_output_halfMeth = readRDS(here::here("data/temp_output_halfMeth.rds"))
 
-fltr_rad = 50
+fltr_rad = 50 #how big you want buffer radius around segment points
+#smaller will make sample size smaller
+#bigger makes sample size larger but potentially more variance in travel time
 
 temp_output_halfMeth_sf = temp_output_halfMeth %>%
   map(~{
@@ -343,21 +288,10 @@ temp_output_halfMeth_sf = temp_output_halfMeth %>%
 
   })
 
-
-temp_output_halfMeth_sf %>% map(nrow)
-
-
-identical(
-temp_output,  temp_output)
+# tictoc::toc()
 
 
-
-
-
-
-tictoc::toc()
-
-##individual_segment========================================
+##individual_segment============================================================
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 temp_output_pro = temp_output_halfMeth_sf  %>%
   reduce(bind_rows) %>%
@@ -386,28 +320,29 @@ temp_output_pro %>%
             ,median = median(time_diff)
             ,sd = sd(time_diff))
 
-tt = temp_output_pro %>%
-  ggplot(aes(
-    segement_name
-    ,time_diff
-    # ,speed_avg
-    ,fill = flag_peak
-  )) +
-  geom_boxplot() +
-  facet_grid(
-    rows = vars(direction_id)
-             ) +
-  labs(
-    x = "Segment"
-    ,y = "Segment Travel Time"
-    ,fill = "Peak"
-  ) +
-  coord_cartesian(ylim = c(0
-                           ,1500
-                           # ,40
-                           ))
 
-ggplotly(tt)
+make_stats_traveltime_segement(
+  temp_output_pro
+  ,grp_c = c('segement_name', 'flag_peak', 'direction_id')
+  ,quantiles = seq(0, 1, .05)
+) %>%
+  filter(flag_peak == "PMPeak")
+
+
+tt = temp_output_pro %>%
+  ggplot(
+    aes(segement_name, time_diff
+        # ,speed_avg
+        ,fill = flag_peak
+    )) +
+  geom_boxplot() +
+  facet_grid(rows = vars(direction_id)) +
+  labs(x = "Segment", y = "Segment Travel Time", fill = "Peak") +
+  coord_cartesian(ylim = c(0, 1500))
+                           # ,40
+                           # ))
+
+plotly::ggplotly(tt)
 
 (240-180)/180
 
