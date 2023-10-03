@@ -188,7 +188,7 @@ combined = read_rds(here::here("data/combined.rds"))
 #this section snaps individual buses to selected segment points
 #performed in 2x steps
 #first step ---- iterates through each segment and performs point snap/identification
-#---------- ---- takes a long time, dont have to perfrom if you're okay with MG's inputs
+#---------- ---- takes a long time, dont have to perform if you're okay with MG's inputs
 #second step ---- applies a buffer to segements, can make as big or small as you want
 
 
@@ -247,7 +247,7 @@ combined = read_rds(here::here("data/combined.rds"))
 # saveRDS(temp_output_halfMeth, here::here("data/temp_output_halfMeth.rds"))
 temp_output_halfMeth = readRDS(here::here("data/temp_output_halfMeth.rds"))
 
-fltr_rad = 50 #how big you want buffer radius around segment points
+fltr_rad = 500 #how big you want buffer radius around segment points
 #smaller will make sample size smaller
 #bigger makes sample size larger but potentially more variance in travel time
 
@@ -302,23 +302,26 @@ temp_output_pro = temp_output_halfMeth_sf  %>%
       hour(date_time) < 18 ~ "PMPeak"
     ,T~"NotTracked"
   )) %>%
-  # mutate(segement_name = fct_relevel(
-  #   segement_name
-  #   ,"23rd_Hewitt", "18th_23rd"
-  #   ,"14th_18th", "ramp_14th"
-  #   ,"4th_ramp", "grove_4th"
-  #   ,"88th_grove", "100th_88th"
-  # )) %>%
   filter(flag_peak != "NotTracked") %>%
-  filter(speed_avg < 60)
+  filter(speed_avg < 60) %>%
+  mutate(segement_name = fct_relevel(segement_name, paste0(combined$name, "_", combined$name_lag))) %>%
+  filter(segement_name != "14th_18th") %>%
+  arrange(trip_id, vehicle_id, desc(time_diff)) %>%
+  group_by(trip_id, vehicle_id) %>%
+  mutate(time_diff_pct = time_diff/time_diff[[1]]
+         # ,time_diff_pct_c = scale(time_diff_pct)
+         ) %>%
+  filter(n() == 8) %>%
+  ungroup() %>%
+  arrange(trip_id, vehicle_id, segement_name)
 
-temp_output_pro %>%
-  filter(direction_id == "south_bound"
-         ,segement_name == "23rd_Hewitt"
-         ,flag_peak == "PMPeak") %>%
-  summarise(mean = mean(time_diff)
-            ,median = median(time_diff)
-            ,sd = sd(time_diff))
+# temp_output_pro %>%
+#   filter(direction_id == "south_bound"
+#          ,segement_name == "23rd_Hewitt"
+#          ,flag_peak == "PMPeak") %>%
+#   summarise(mean = mean(time_diff)
+#             ,median = median(time_diff)
+#             ,sd = sd(time_diff))
 
 
 make_stats_traveltime_segement(
@@ -329,37 +332,115 @@ make_stats_traveltime_segement(
   filter(flag_peak == "PMPeak")
 
 
-tt = temp_output_pro %>%
+temp_output_pro %>%
+  filter(segement_name != "Hewitt_100th") %>%
+
   ggplot(
-    aes(segement_name, time_diff
+    aes(segement_name, time_diff_pct
         # ,speed_avg
+        ,fill = flag_peak
+    )) +
+  geom_boxplot() +
+  facet_grid(rows = vars(direction_id, AMPeak)) +
+  labs(x = "Segment", y = "Segment Travel Time", fill = "Peak") +
+  coord_cartesian(ylim = c(0, .5))
+                           # ,40
+                           # ))
+saveRDS(temp_output_pro
+        ,"C:/Users/USMG687637/Documents/071_projects/mikegaunt4042/content/post/2023-10-02-purrr-correlation-plots/data_travel_times.rds")
+temp_output_pro %>%
+  filter(segement_name != "Hewitt_100th") %>%
+  filter(wday(date_time) %in% c(3, 4, 5)) %>%
+  # count(trip_id, vehicle_id) %>% arrange(desc(n))
+  # view()
+
+  ggplot(
+    aes(segement_name, time_diff_pct
+        ,group = paste(trip_id, vehicle_id), color = as.factor(wday(date_time))
+        ,fill = flag_peak
+    )) +
+  geom_line() +
+  facet_grid(rows = vars(direction_id, flag_peak)) +
+  labs(x = "Segment", y = "Segment Travel Time", fill = "Peak") +
+  coord_cartesian(ylim = c(0, .4))
+
+
+temp_output_pro %>%
+  filter(segement_name != "Hewitt_100th") %>%
+  filter(wday(date_time) %in% c(3, 4, 5)) %>%
+  group_by(segement_name, direction_id, flag_peak) %>%
+  mutate(time_diff_pct_c = scale(time_diff, center = T, scale = F)
+         ,time_diff_pct_pct = time_diff_pct/median(time_diff_pct)) %>%
+  ungroup() %>%
+  ggplot(
+    aes(segement_name, time_diff_pct_pct
+        # ,group = paste(trip_id, vehicle_id)
         ,fill = flag_peak
     )) +
   geom_boxplot() +
   facet_grid(rows = vars(direction_id)) +
   labs(x = "Segment", y = "Segment Travel Time", fill = "Peak") +
-  coord_cartesian(ylim = c(0, 1500))
-                           # ,40
-                           # ))
-
-plotly::ggplotly(tt)
-
-(240-180)/180
+coord_cartesian(ylim = c(0, 2.5))
 
 temp_output_pro %>%
-  ggplot(
-    aes(
-      # segement_name
-      time_diff
-      ,speed_avg
-      # ,time_diff
-      ,color = flag_peak
-      ,group = segement_name
-    )) +
-  geom_point() +
-  # geom_smooth(method = "gam") +
-  coord_cartesian(ylim = c(0, NA))
-facet_grid(cols = vars(segement_name))
+  filter(segement_name != "Hewitt_100th") %>%
+  filter(wday(date_time) %in% c(3, 4, 5))
+
+
+tt = temp_output_pro %>%
+  filter(segement_name != "Hewitt_100th") %>%
+  filter(wday(date_time) %in% c(3, 4, 5)) %>%
+  group_by(segement_name, direction_id, flag_peak) %>%
+  mutate(time_diff_pct_c = scale(time_diff, center = T, scale = F)
+         ,time_diff_pct_pct = time_diff_pct/median(time_diff_pct)) %>%
+  ungroup() %>%
+  pivot_wider(id_cols = c('trip_id', 'direction_id', 'route_id', 'vehicle_id', 'flag_peak')
+              ,names_from = 'segement_name'
+              ,values_from = 'time_diff_pct') %>%
+  filter(flag_peak == "AMPeak") %>%
+  filter(direction_id != "south_bound") %>%
+  select(!trip_id:flag_peak)
+
+tt %>%
+  cor(use = "pairwise.complete.obs") %>%
+  data.frame() %>%
+  rename_with(~str_remove_all(.x, "X")) %>%
+  mutate(seg = row.names(.))
+  corrplot::corrplot(diag = F, type = "lower", method = 'color'
+                     ,order = 'hclust')
+
+
+yolo = tt %>%
+  group_by(flag_peak, direction_id) %>%
+  nest() %>%
+  mutate(cor = map(data, ~.x %>%
+                     select(!c(trip_id:vehicle_id)) %>%
+                     cor(use = "pairwise.complete.obs") %>%
+                     data.frame() %>%
+                     rename_with(~str_remove_all(.x, "X")) %>%
+                     mutate(seg = row.names(.)))) %>%
+  select(!data) %>%
+  unnest(cols = cor) %>%
+  ungroup()
+
+# scale_al
+
+
+plot = yolo %>%
+  pivot_longer(cols = !c(direction_id, flag_peak, seg)
+               ,names_to = "seg_1") %>%
+  mutate(across(c(seg, seg_1), ~fct_relevel(.x, paste0(combined$name, "_", combined$name_lag)))) %>%
+  mutate(across(c(seg_1), ~fct_relevel(.x, paste0(rev(combined$name), "_", rev(combined$name_lag))))) %>%
+
+  ggplot() +
+  geom_tile(aes(seg, seg_1, fill = value)) +
+  scale_fill_gradient2(limits = c(-1, 1)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+  facet_grid(rows = vars(direction_id)
+             ,cols = vars(flag_peak ))
+
+plot %>%
+  ggplotly()
 
 
 ##end=====
